@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "es6",
+    "target": "es5",
+    // "module": "commonjs",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+  },
+  "include": ["./**/*.ts"],
+  "exclude": [
+    "node_modules"
+  ],
+  "types": [
+    "node",
+    "aws-sdk"
+  ]
+}

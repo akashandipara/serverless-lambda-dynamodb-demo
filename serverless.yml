@@ -1,0 +1,142 @@
+org: akashandipara022
+app: free
+service: free
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  environment:
+    DYNAMODB_TABLE: ${self:service}-${sls:stage}
+  httpApi:
+    cors: true
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - "sns:*"
+          # Resource: "arn:aws:dynamodb:${aws:region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+          Resource: "*"
+
+# Serverless Functions
+functions:
+  listUser:
+    handler: lambdas/listUsers.list
+    events:
+      - httpApi:
+          path: /user/list
+          method: get
+
+  getUser:
+    handler: lambdas/getUser.get
+    events:
+      - httpApi:
+          path: /user/{email}
+          method: get
+
+  register:
+    handler: lambdas/registerUser.create
+    events:
+      - httpApi:
+          path: /user/register
+          method: post
+
+  createBoard:
+    handler: lambdas/createMessageBoard.create
+    events:
+      - httpApi:
+          path: /messageBoard/create
+          method: post  
+
+  listBoard:
+    handler: lambdas/listMessageBoard.list
+    events:
+      - httpApi:
+          path: /messageBoard/list
+          method: get  
+
+  postMessage:
+    handler: lambdas/postMessage.create
+    events:
+      - httpApi:
+          path: /postMessage/create
+          method: post  
+
+  returnUserId:
+    handler: lambdas/returnUserId
+    events:
+      - sns:
+        arn: !Ref SuperTopic
+        topicName: returnUserId
+
+# Serverless Plugins
+plugins:
+  - serverless-offline
+  - serverless-plugin-typescript
+  # - serverless-offline-sns
+  # - serverless-offline-sqs
+
+
+resources:
+  Resources:
+    userTable:
+      Type: AWS::DynamoDB::Table
+      Properties: 
+        TableName: userTable
+        AttributeDefinitions:
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: email
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    messageBoardTable:
+      Type: AWS::DynamoDB::Table
+      Properties: 
+        TableName: messageBoard
+        AttributeDefinitions:
+          - AttributeName: board
+            AttributeType: S
+        KeySchema:
+          - AttributeName: board
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    postMessageTable:
+      Type: AWS::DynamoDB::Table
+      Properties: 
+        TableName: posts
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    MyTopic:
+        Type: AWS::SNS::Topic
+        Properties:
+          DisplayName: 'User id'
+          TopicName: MyFinalTopic
+    SNSQuestionEvent:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: Question Event Topic
+        TopicName: question-event
+
+
+custom:
+  serverless-offline-sns:
+    port: 4002 # a free port for the sns server to run on
+    debug: false

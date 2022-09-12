@@ -50,6 +50,12 @@ ts-node-esm index.ts
 - create user:  POST | http://localhost:3000/user/register
 - list users:   GET  | http://localhost:3000/user/list  
 - get user by emailId:  GET  | http://localhost:3000/user/{email} 
-- create message board:   POST | http://localhost:3000/messageBoard/create 
+- create message board: POST | http://localhost:3000/messageBoard/create 
 - list message board:   GET  | http://localhost:3000/messageBoard/list 
 - add post message: POST | http://localhost:3000/postMessage/create
+
+
+
+## Improvements
+- I tried to integrate SNQ, SQS. Howevewr when I put SNS and SQS in the yml config file, it doesn't compile. There is a manual way to deploy SQS and SNS directly on AWS console, but I did not take this approach because of future automated deployments.
+- There is another improvement when integrating socket.io with DynamoDB via Typescript, it is not allowing me to import the file into socket implementation. However the socket connection gets established.
